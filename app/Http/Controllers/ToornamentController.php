@@ -115,4 +115,31 @@ class ToornamentController extends Controller
             return response()->json(['error' => $errorMessage], $response->status());
         }        
     }
+
+    public function getAllMatchFromDivision(Request $request){
+        $stageId = $request->input('stage_ids');
+
+        if(!$stageId) {
+            return response()->json(['message' => 'Aucun paramètre a été reçu.'], 400);
+        }
+
+        $response = Http::withHeaders([
+            'X-Api-Key' => env('TOORNAMENT_API_KEY'),
+            'Authorization' => env('TOORNAMENT_ACCESS_TOKEN'),
+            'Range' => 'matches=0-99'
+        ])->get("https://api.toornament.com/organizer/v2/matches", [
+            'tournament_ids' => env("TOORNAMENT_ID_S2"),
+            "stage_ids" => $stageId,
+        ]);
+
+        if($response->successful()) {
+            $matches = $response->json();
+
+            return $matches;
+        } else {
+            $errorMessage = $response->json()["message"] ?? "Une erreur API est survenue";
+
+            return response()->json(['error' => $errorMessage], $response->status());
+        }   
+    }
 }
